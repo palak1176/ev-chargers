@@ -33,15 +33,8 @@ This project processes electric vehicle (EV) charging station data and calculate
   - EV DC Fast Count
   - Access Code
 
-## How It Works
-- Reads the CSV file using pandas
-- Handles file and parsing errors safely
-- Filters relevant columns
-- Standardizes city names (strip + title case)
-- Cleans and standardizes Access Code values
-- Filters rows to only Atlanta MSA cities
-- Replaces missing charger values with 0
-- Converts values to integers
-- Sums charger counts by type and overall total
-- Groups charger counts by Access Code
-- Returns the cleaned DataFrame
+## Usage
+- Download the CSV file from [https://afdc.energy.gov/stations#/analyze?region=US-GA&country=US&access=public&access=private&fuel=BD&fuel=CNG&fuel=E85&fuel=HY&fuel=LNG&fuel=LPG&fuel=ELEC&fuel=RD&lpg_secondary=true&hy_nonretail=true&ev_levels=all&tab=station](url)
+- Place the CSV file in the same folder as your Python script.
+- If needed, replace the filename at the end of the script: print(ev_chargers_data("ev_charging_units_05.19.26.csv"))
+- Run the script: python ev_chargers.py
