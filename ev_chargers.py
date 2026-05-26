@@ -2,20 +2,19 @@ import pandas as pd
 
 atlanta_msa_cities = [
     "Acworth", "Adairsville", "Aldora", "Alpharetta", "Atlanta",
-    "Auburn", "Austell", "Avondale Estates", "Ball Ground",
+    "Auburn", "Austell", "Avondale Estates", "Ball Ground", "Barnesville",
     "Berkeley Lake", "Bethlehem", "Between", "Bostwick", "Bowdon",
     "Braselton", "Braswell", "Bremen", "Brookhaven", "Brooks",
     "Buchanan", "Buckhead", "Buford", "Canton", "Carl",
     "Carrollton", "Cartersville", "Centralhatchee", "Chamblee",
     "Chattahoochee Hills", "Clarkston", "College Park", "Concord",
-    "Conyers", "Covington", "Cumming", "Dacula", "Dahlonega",
-    "Dallas", "Dawsonville", "Decatur", "Doraville", "Douglasville",
-    "Duluth", "Dunwoody", "East Point", "Emerson", "Ephesus",
-    "Euharlee", "Fairburn", "Fayetteville", "Flovilla",
-    "Forest Park", "Franklin", "Milton", "Mulberry", "Newnan", "Roswell",
-    "Sandy Springs", "Smyrna", "Snellville", "South Fulton",
-    "Stockbridge", "Stone Mountain", "Stonecrest", "Suwanee",
-    "Tucker", "Union City", "Villa Rica", "Woodstock"]
+    "Conyers", "Covington", "Cumming", "Dacula", "Dallas", "Dawsonville", 
+    "Decatur", "Doraville", "Douglasville", "Duluth", "Dunwoody", 
+    "East Point", "Emerson", "Ephesus", "Euharlee", "Fairburn", 
+    "Fayetteville", "Flovilla", "Forest Park", "Franklin", "Goggins", 
+    "Milner", "Milton", "Mulberry", "Newnan", "Roswell", "Sandy Springs", 
+    "Smyrna", "Snellville", "South Fulton", "Stockbridge", "Stone Mountain", 
+    "Stonecrest", "Suwanee", "Tucker", "Union City", "Villa Rica", "Woodstock"]
 
 def ev_chargers_data(file_path):
     # Reads CSV file
