@@ -12,12 +12,12 @@ atlanta_msa_cities = [
 "Jonesboro", "Kennesaw", "Kingston", "Lake City", "Lawrenceville", "Mableton", "Lilburn", "Lithonia", "Locust Grove", 
 "Loganville", "Lone Oak", "Lovejoy", "Luthersville", "Madison", "Manchester", "Mansfield", "Marietta", "McDonough", 
 "Meansville", "Milner", "Milton", "Molena", "Monroe", "Monticello", "Moreland", "Morrow", "Mount Zion", "Mountain Park", 
-"Nelson", "Newborn", "Newnan", "Norcross", "Orchard Hill", "Oxford", "Peachtree City", "Peachtree Corners", "Pine Lake", 
-"Porterdale", "Powder Springs", "Rest Haven", "Riverdale", "Roberta", "Rockmart", "Roswell", "Rutledge", "Sandy Springs", 
-"Senoia", "Shady Dale", "Sharpsburg", "Smyrna", "Snellville", "Social Circle", "South Fulton", "Statham", "Stockbridge", 
-"Stone Mountain", "Stonecrest", "Sugar Hill", "Sunny Side", "Suwanee", "Talking Rock", "Tallapoosa", "Taylorsville", 
-"Temple", "Tucker", "Turin", "Tyrone", "Union City", "Villa Rica", "Waco", "Waleska", "Walnut Grove", "Warm Springs", 
-"White", "Whitesburg", "Williamson", "Winder", "Woodbury", "Woodstock", "Woolsey", "Zebulon"]
+"Mulberry", "Nelson", "Newborn", "Newnan", "Norcross", "Orchard Hill", "Oxford", "Peachtree City", "Peachtree Corners", 
+"Pine Lake", "Porterdale", "Powder Springs", "Rest Haven", "Riverdale", "Roberta", "Rockmart", "Roswell", "Rutledge", 
+"Sandy Springs", "Senoia", "Shady Dale", "Sharpsburg", "Smyrna", "Snellville", "Social Circle", "South Fulton", "Statham", 
+"Stockbridge", "Stone Mountain", "Stonecrest", "Sugar Hill", "Sunny Side", "Suwanee", "Talking Rock", "Tallapoosa", 
+"Taylorsville", "Temple", "Tucker", "Turin", "Tyrone", "Union City", "Villa Rica", "Waco", "Waleska", "Walnut Grove", 
+"Warm Springs", "White", "Whitesburg", "Williamson", "Winder", "Woodbury", "Woodstock", "Woolsey", "Zebulon"]
 
 def ev_chargers_data(file_path):
     # Reads CSV file
