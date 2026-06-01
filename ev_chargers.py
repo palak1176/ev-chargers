@@ -1,20 +1,23 @@
 import pandas as pd
 
 atlanta_msa_cities = [
-    "Acworth", "Adairsville", "Aldora", "Alpharetta", "Atlanta",
-    "Auburn", "Austell", "Avondale Estates", "Ball Ground", "Barnesville",
-    "Berkeley Lake", "Bethlehem", "Between", "Bostwick", "Bowdon",
-    "Braselton", "Braswell", "Bremen", "Brookhaven", "Brooks",
-    "Buchanan", "Buckhead", "Buford", "Canton", "Carl",
-    "Carrollton", "Cartersville", "Centralhatchee", "Chamblee",
-    "Chattahoochee Hills", "Clarkston", "College Park", "Concord",
-    "Conyers", "Covington", "Cumming", "Dacula", "Dallas", "Dawsonville", 
-    "Decatur", "Doraville", "Douglasville", "Duluth", "Dunwoody", 
-    "East Point", "Emerson", "Ephesus", "Euharlee", "Fairburn", 
-    "Fayetteville", "Flovilla", "Forest Park", "Franklin", "Goggins", 
-    "Milner", "Milton", "Mulberry", "Newnan", "Roswell", "Sandy Springs", 
-    "Smyrna", "Snellville", "South Fulton", "Stockbridge", "Stone Mountain", 
-    "Stonecrest", "Suwanee", "Tucker", "Union City", "Villa Rica", "Woodstock"]
+"Acworth", "Adairsville", "Aldora", "Alpharetta", "Atlanta", "Auburn", "Austell", "Avondale Estates", 
+"Ball Ground", "Barnesville", "Berkeley Lake", "Bethlehem", "Between", "Bostwick", "Bowdon", "Braselton", 
+"Braswell", "Bremen", "Brookhaven", "Brooks", "Buchanan", "Buckhead", "Buford", "Canton", "Carl", "Carrollton", 
+"Cartersville", "Centralhatchee", "Chamblee", "Chattahoochee Hills", "Clarkston", "College Park", "Concord", 
+"Conyers", "Covington", "Cumming", "Dacula", "Dallas", "Dawsonville", "Decatur", "Doraville", "Douglasville", 
+"Duluth", "Dunwoody", "East Point", "Emerson", "Ephesus", "Euharlee", "Fairburn", "Fayetteville", "Flovilla", 
+"Forest Park", "Franklin", "Gay", "Good Hope", "Grantville", "Grayson", "Greenville", "Griffin", "Hampton", 
+"Hapeville", "Harrison", "Hiram", "Holly Springs", "Jackson", "Jasper", "Jenkinsburg", "Jersey", "Johns Creek", 
+"Jonesboro", "Kennesaw", "Kingston", "Lake City", "Lawrenceville", "Mableton", "Lilburn", "Lithonia", "Locust Grove", 
+"Loganville", "Lone Oak", "Lovejoy", "Luthersville", "Madison", "Manchester", "Mansfield", "Marietta", "McDonough", 
+"Meansville", "Milner", "Milton", "Molena", "Monroe", "Monticello", "Moreland", "Morrow", "Mount Zion", "Mountain Park", 
+"Nelson", "Newborn", "Newnan", "Norcross", "Orchard Hill", "Oxford", "Peachtree City", "Peachtree Corners", "Pine Lake", 
+"Porterdale", "Powder Springs", "Rest Haven", "Riverdale", "Roberta", "Rockmart", "Roswell", "Rutledge", "Sandy Springs", 
+"Senoia", "Shady Dale", "Sharpsburg", "Smyrna", "Snellville", "Social Circle", "South Fulton", "Statham", "Stockbridge", 
+"Stone Mountain", "Stonecrest", "Sugar Hill", "Sunny Side", "Suwanee", "Talking Rock", "Tallapoosa", "Taylorsville", 
+"Temple", "Tucker", "Turin", "Tyrone", "Union City", "Villa Rica", "Waco", "Waleska", "Walnut Grove", "Warm Springs", 
+"White", "Whitesburg", "Williamson", "Winder", "Woodbury", "Woodstock", "Woolsey", "Zebulon"]
 
 def ev_chargers_data(file_path):
     # Reads CSV file
