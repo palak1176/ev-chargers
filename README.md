@@ -34,7 +34,7 @@ This project processes electric vehicle (EV) charging station data and calculate
   - Access Code
 
 ## Usage
-- Download the CSV file from [https://afdc.energy.gov/stations#/analyze?region=US-GA&country=US&access=public&access=private&fuel=BD&fuel=CNG&fuel=E85&fuel=HY&fuel=LNG&fuel=LPG&fuel=ELEC&fuel=RD&lpg_secondary=true&hy_nonretail=true&ev_levels=all&tab=station](url)
+- Download the "EV Charging Ports" CSV file from [https://afdc.energy.gov/stations#/analyze?region=US-GA&country=US&access=public&access=private&fuel=BD&fuel=CNG&fuel=E85&fuel=HY&fuel=LNG&fuel=LPG&fuel=ELEC&fuel=RD&lpg_secondary=true&hy_nonretail=true&ev_levels=all&tab=station](url)
 - Place the CSV file in the same folder as your Python script.
-- If needed, replace the filename at the end of the script: print(ev_chargers_data("ev_charging_units_05.19.26.csv"))
+- If needed, replace the filename at the end of the script: print(ev_chargers_data("alt_fuel_stations_ev_charging_units (Jun 2 2026).csv"))
 - Run the script: python ev_chargers.py

@@ -74,7 +74,7 @@ def ev_chargers_data(file_path):
         print(f"  Level 2 EV Chargers: {row['EV Level2 EVSE Num']}")
         print(f"  DC Fast Charging EV Chargers: {row['EV DC Fast Count']}")
 
-    return ev_chargers_df
+    # return ev_chargers_df
     # .to_csv("atlanta_msa_ev_chargers.csv", index=False)
 
-print(ev_chargers_data("ev_charging_units_05.19.26.csv"))
+print(ev_chargers_data("alt_fuel_stations_ev_charging_units (Jun 2 2026).csv"))
