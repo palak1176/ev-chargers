@@ -35,8 +35,9 @@ def ev_chargers_data(file_path):
     
     # Check for required columns and keep only those needed for analysis
     columns_to_keep = ['City', 'EV Level1 EVSE Num', 'EV Level2 EVSE Num', 'EV DC Fast Count', 'Access Code', 'EV Network', 
-                       'EV J1772 Connector Count', 'EV CCS Connector Count', 'EV CHAdeMO Connector Count', 'EV J3400 Connector Count', 'EV J3271 Connector Count'] 
-    # could be nice to have these columns if needed: 'Date Last Confirmed', 'Updated At', 'Access Detail Code'
+                       'EV J1772 Connector Count', 'EV CCS Connector Count', 'EV CHAdeMO Connector Count', 'EV J3400 Connector Count', 'EV J3271 Connector Count',
+                       'Open Date', 'Date Last Confirmed'] 
+    # could be nice to have these columns if needed: 'Updated At', 'Access Detail Code'
     
     missing_cols = [col for col in columns_to_keep if col not in ev_chargers_df.columns] 
     if missing_cols:
@@ -44,8 +45,9 @@ def ev_chargers_data(file_path):
     ev_chargers_df = ev_chargers_df[columns_to_keep]
 
     # Clean and filter data for Atlanta MSA cities
-    ev_chargers_df['City'] = ev_chargers_df['City'].fillna('').str.strip().str.title()
-    ev_chargers_df = ev_chargers_df[ev_chargers_df['City'].isin(atlanta_msa_cities)]
+    atlanta_msa_cities_lower = {city.lower() for city in atlanta_msa_cities}
+    ev_chargers_df['City'] = ev_chargers_df['City'].fillna('').str.strip().str.lower()
+    ev_chargers_df = ev_chargers_df[ev_chargers_df['City'].isin(atlanta_msa_cities_lower)]
 
     # Clean 'Access Code' column and fill missing values with 'Unknown'
     ev_chargers_df['Access Code'] = ev_chargers_df['Access Code'].fillna('Unknown').str.strip().str.title().astype(str)
@@ -77,12 +79,14 @@ def ev_chargers_data(file_path):
 
     # Calculate and print the number of connectors by type 
     connector_columns = ['EV J1772 Connector Count', 'EV CCS Connector Count', 'EV CHAdeMO Connector Count', 'EV J3400 Connector Count', 'EV J3271 Connector Count']
+    ev_chargers_df[connector_columns] = (ev_chargers_df[connector_columns].fillna(0).astype(int))
     ev_chargers_connectors_df = ev_chargers_df[connector_columns].sum().reset_index()
     print("\nTotal Number of Connectors by Type:")
     for _, row in ev_chargers_connectors_df.iterrows():
         print(f"{row['index']}: {row[0]}")
 
     # Calculate and print the charging ports by charging network for each type of charger
+    ev_chargers_df['EV Network'] = (ev_chargers_df['EV Network'].fillna('Unknown'))
     ev_chargers_network_df = ev_chargers_df.groupby('EV Network')[charger_columns].sum().reset_index()
     print("\nEV Chargers by Charging Network:")
     for _, row in ev_chargers_network_df.iterrows():
@@ -91,7 +95,42 @@ def ev_chargers_data(file_path):
         print(f"  Level 2 EV Chargers: {row['EV Level2 EVSE Num']}")
         print(f"  DC Fast Charging EV Chargers: {row['EV DC Fast Count']}")
 
-    # return ev_chargers_df
+    print("\nCumulative EV Chargers Installed Over Time")
+    # Ensure 'Open Date' is in datetime format and handle errors
+    ev_chargers_df['Open Date'] = pd.to_datetime(ev_chargers_df['Open Date'], errors='coerce')
+
+    if ev_chargers_df['Open Date'].isnull().any():
+        # Use 'Date Last Confirmed' as a fallback for missing 'Open Date' values
+        ev_chargers_df['Date Last Confirmed'] = pd.to_datetime(ev_chargers_df['Date Last Confirmed'], errors='coerce')
+        ev_chargers_df['Open Date'] = ev_chargers_df['Open Date'].fillna(ev_chargers_df['Date Last Confirmed'])
+
+    # Extract year from 'Open Date'
+    ev_chargers_df['Year'] = ev_chargers_df['Open Date'].dt.year   
+
+    # Years to evaluate
+    target_years = [2005, 2015, 2025, 2026]
+
+    # Build cumulative counts for each type of charger and overall total
+    cumulative_counts = []
+    for year in target_years:
+        level_1_cumulative = ev_chargers_df[ev_chargers_df['Year'] <= year]['EV Level1 EVSE Num'].sum()
+        level_2_cumulative = ev_chargers_df[ev_chargers_df['Year'] <= year]['EV Level2 EVSE Num'].sum()
+        dc_fast_cumulative = ev_chargers_df[ev_chargers_df['Year'] <= year]['EV DC Fast Count'].sum()
+        total_cumulative = level_1_cumulative + level_2_cumulative + dc_fast_cumulative
+        cumulative_counts.append({
+            'Year': year,
+            'Level 1 Cumulative': level_1_cumulative,
+            'Level 2 Cumulative': level_2_cumulative,
+            'DC Fast Cumulative': dc_fast_cumulative,
+            'Total Cumulative': total_cumulative
+        })
+    
+    # Convert to DataFrame
+    ev_chargers_cumulative_df = pd.DataFrame(cumulative_counts)
+    # Print cumulative counts
+    print(ev_chargers_cumulative_df.to_string(index=False))
+
+    return ev_chargers_df
     # .to_csv("atlanta_msa_ev_chargers.csv", index=False)
 
 print(ev_chargers_data("alt_fuel_stations_ev_charging_units (Jun 2 2026).csv"))
