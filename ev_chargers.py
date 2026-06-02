@@ -34,7 +34,8 @@ def ev_chargers_data(file_path):
         return None
     
     # Check for required columns and keep only those needed for analysis
-    columns_to_keep = ['City', 'EV Level1 EVSE Num', 'EV Level2 EVSE Num', 'EV DC Fast Count', 'Access Code'] 
+    columns_to_keep = ['City', 'EV Level1 EVSE Num', 'EV Level2 EVSE Num', 'EV DC Fast Count', 'Access Code', 'EV Network', 
+                       'EV J1772 Connector Count', 'EV CCS Connector Count', 'EV CHAdeMO Connector Count', 'EV J3400 Connector Count', 'EV J3271 Connector Count'] 
     # could be nice to have these columns if needed: 'Date Last Confirmed', 'Updated At', 'Access Detail Code'
     
     missing_cols = [col for col in columns_to_keep if col not in ev_chargers_df.columns] 
@@ -66,10 +67,26 @@ def ev_chargers_data(file_path):
     print ("Total EV Chargers Installed: ", total_chargers)
 
     # Calculate and print the number of EV chargers by access code
-    evchargers_access_df = ev_chargers_df.groupby('Access Code')[charger_columns].sum().reset_index()
+    ev_chargers_access_df = ev_chargers_df.groupby('Access Code')[charger_columns].sum().reset_index()
     print("\nEV Chargers by Access Code:")
-    for _, row in evchargers_access_df.iterrows():
+    for _, row in ev_chargers_access_df.iterrows():
         print(f"Access Code: {row['Access Code']}")
+        print(f"  Level 1 EV Chargers: {row['EV Level1 EVSE Num']}")
+        print(f"  Level 2 EV Chargers: {row['EV Level2 EVSE Num']}")
+        print(f"  DC Fast Charging EV Chargers: {row['EV DC Fast Count']}")
+
+    # Calculate and print the number of connectors by type 
+    connector_columns = ['EV J1772 Connector Count', 'EV CCS Connector Count', 'EV CHAdeMO Connector Count', 'EV J3400 Connector Count', 'EV J3271 Connector Count']
+    ev_chargers_connectors_df = ev_chargers_df[connector_columns].sum().reset_index()
+    print("\nTotal Number of Connectors by Type:")
+    for _, row in ev_chargers_connectors_df.iterrows():
+        print(f"{row['index']}: {row[0]}")
+
+    # Calculate and print the charging ports by charging network for each type of charger
+    ev_chargers_network_df = ev_chargers_df.groupby('EV Network')[charger_columns].sum().reset_index()
+    print("\nEV Chargers by Charging Network:")
+    for _, row in ev_chargers_network_df.iterrows():
+        print(f"Charging Network: {row['EV Network']}")
         print(f"  Level 1 EV Chargers: {row['EV Level1 EVSE Num']}")
         print(f"  Level 2 EV Chargers: {row['EV Level2 EVSE Num']}")
         print(f"  DC Fast Charging EV Chargers: {row['EV DC Fast Count']}")
