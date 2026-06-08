@@ -46,8 +46,7 @@ def ev_chargers_data(file_path):
 
     # Clean and filter data for Atlanta MSA cities
     atlanta_msa_cities_lower = {city.lower() for city in atlanta_msa_cities}
-    ev_chargers_df['City'] = ev_chargers_df['City'].fillna('').str.strip().str.lower()
-    ev_chargers_df = ev_chargers_df[ev_chargers_df['City'].isin(atlanta_msa_cities_lower)]
+    ev_chargers_df = ev_chargers_df[ev_chargers_df['City'].fillna('').str.strip().str.lower().isin(atlanta_msa_cities_lower)]
 
     # Clean 'Access Code' column and fill missing values with 'Unknown'
     ev_chargers_df['Access Code'] = ev_chargers_df['Access Code'].fillna('Unknown').str.strip().str.title().astype(str)
@@ -129,6 +128,7 @@ def ev_chargers_data(file_path):
     ev_chargers_cumulative_df = pd.DataFrame(cumulative_counts)
     # Print cumulative counts
     print(ev_chargers_cumulative_df.to_string(index=False))
+    print("\n")
 
     return ev_chargers_df
     # .to_csv("atlanta_msa_ev_chargers.csv", index=False)
