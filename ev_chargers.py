@@ -123,7 +123,7 @@ def ev_chargers_data(file_path):
             'DC Fast Cumulative': dc_fast_cumulative,
             'Total Cumulative': total_cumulative
         })
-    
+
     # Convert to DataFrame
     ev_chargers_cumulative_df = pd.DataFrame(cumulative_counts)
     # Print cumulative counts
@@ -133,4 +133,4 @@ def ev_chargers_data(file_path):
     return ev_chargers_df
     # .to_csv("atlanta_msa_ev_chargers.csv", index=False)
 
-print(ev_chargers_data("alt_fuel_stations_ev_charging_units (Jun 2 2026).csv"))
+print(ev_chargers_data("alt_fuel_stations_ev_charging_units (Jul 7 2026).csv"))
