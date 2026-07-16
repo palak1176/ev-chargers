@@ -19,6 +19,18 @@ atlanta_msa_cities = [
 "Taylorsville", "Temple", "Tucker", "Turin", "Tyrone", "Union City", "Villa Rica", "Waco", "Waleska", "Walnut Grove", 
 "Warm Springs", "White", "Whitesburg", "Williamson", "Winder", "Woodbury", "Woodstock", "Woolsey", "Zebulon"]
 
+atlanta_mpo_cities = [city for city in atlanta_msa_cities if city not in ["Bremen", "Tallapoosa", "Buchanan", "Temple", 
+                                                                          "Waco", "Lone Oak", "Luthersville", "Manchester", 
+                                                                          "Gay", "Grantville", "Greenville", "Haralson", 
+                                                                          "Warm Springs", "Woodbury", "Adairsville", 
+                                                                          "Emerson", "Euharlee", "Taylorsville", "White"
+                                                                          "Kingston", "Ephesus", "Franklin", "Centralhatchee",
+                                                                          "Rutledge", "Madison", "Social Circle", "Bostwick",
+                                                                          "Buckhead", "Flovilla", "Jackson", "Shady Dale", 
+                                                                          "Monticello", "Jasper", "Aldora", "Barnesville",
+                                                                          "Milner", "Orchard Hill", "Talking Rock", "Nelson",
+                                                                          "Meansville", "Molena", "Concord", "Williamson", "Zebulon"]]
+
 def ev_chargers_data(file_path):
     # Reads CSV file
     try:
