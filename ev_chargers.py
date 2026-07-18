@@ -1,11 +1,10 @@
 import pandas as pd
 
-atlanta_msa_cities = [
-"Acworth", "Adairsville", "Aldora", "Alpharetta", "Atlanta", "Auburn", "Austell", "Avondale Estates", 
+atlanta_msa_cities = ["Acworth", "Adairsville", "Aldora", "Alpharetta", "Atlanta", "Auburn", "Austell", "Avondale Estates", 
 "Ball Ground", "Barnesville", "Berkeley Lake", "Bethlehem", "Between", "Bostwick", "Bowdon", "Braselton", 
 "Braswell", "Bremen", "Brookhaven", "Brooks", "Buchanan", "Buckhead", "Buford", "Canton", "Carl", "Carrollton", 
 "Cartersville", "Centralhatchee", "Chamblee", "Chattahoochee Hills", "Clarkston", "College Park", "Concord", 
-"Conyers", "Covington", "Cumming", "Dacula", "Dallas", "Dawsonville", "Decatur", "Doraville", "Douglasville", 
+"Conyers", "Covington", "Cumming", "Dacula", "Dallas", "Dawsonville", "Decatur", "Doraville", "Douglasville",         
 "Duluth", "Dunwoody", "East Point", "Emerson", "Ephesus", "Euharlee", "Fairburn", "Fayetteville", "Flovilla", 
 "Forest Park", "Franklin", "Gay", "Good Hope", "Grantville", "Grayson", "Greenville", "Griffin", "Hampton", 
 "Hapeville", "Harrison", "Hiram", "Holly Springs", "Jackson", "Jasper", "Jenkinsburg", "Jersey", "Johns Creek", 
@@ -19,19 +18,7 @@ atlanta_msa_cities = [
 "Taylorsville", "Temple", "Tucker", "Turin", "Tyrone", "Union City", "Villa Rica", "Waco", "Waleska", "Walnut Grove", 
 "Warm Springs", "White", "Whitesburg", "Williamson", "Winder", "Woodbury", "Woodstock", "Woolsey", "Zebulon"]
 
-atlanta_mpo_cities = [city for city in atlanta_msa_cities if city not in ["Bremen", "Tallapoosa", "Buchanan", "Temple", 
-                                                                          "Waco", "Lone Oak", "Luthersville", "Manchester", 
-                                                                          "Gay", "Grantville", "Greenville", "Haralson", 
-                                                                          "Warm Springs", "Woodbury", "Adairsville", 
-                                                                          "Emerson", "Euharlee", "Taylorsville", "White",
-                                                                          "Kingston", "Ephesus", "Franklin", "Centralhatchee",
-                                                                          "Rutledge", "Madison", "Social Circle", "Bostwick",
-                                                                          "Buckhead", "Flovilla", "Jackson", "Shady Dale", 
-                                                                          "Monticello", "Jasper", "Aldora", "Barnesville",
-                                                                          "Milner", "Orchard Hill", "Talking Rock", "Nelson",
-                                                                          "Meansville", "Molena", "Concord", "Williamson", "Zebulon"]]
-
-def ev_chargers_data(file_path):
+def ev_chargers_data(file_path, region):
     # Reads CSV file
     try:
         ev_chargers_df = pd.read_csv(file_path)
@@ -55,10 +42,29 @@ def ev_chargers_data(file_path):
     if missing_cols:
         print(f"Missing columns: {missing_cols}")
         return None
+    
+    region = region.strip().lower()
+    if region == "atlanta msa":
+        cities = atlanta_msa_cities
+    elif region == "atlanta mpo":
+        cities = [city for city in atlanta_msa_cities if city not in ["Bremen", "Tallapoosa", "Buchanan", "Temple", 
+                                                            "Waco", "Lone Oak", "Luthersville", "Manchester", 
+                                                            "Gay", "Grantville", "Greenville", "Haralson", 
+                                                            "Warm Springs", "Woodbury", "Adairsville", 
+                                                            "Emerson", "Euharlee", "Taylorsville", "White",
+                                                            "Kingston", "Ephesus", "Franklin", "Centralhatchee",
+                                                            "Rutledge", "Madison", "Social Circle", "Bostwick",
+                                                            "Buckhead", "Flovilla", "Jackson", "Shady Dale", 
+                                                            "Monticello", "Jasper", "Aldora", "Barnesville",
+                                                            "Milner", "Orchard Hill", "Talking Rock", "Nelson",
+                                                            "Meansville", "Molena", "Concord", "Williamson", "Zebulon"]]
+    else:
+        print(f"Error: Region '{region}' is not recognized. Please use 'Atlanta MSA' or 'Atlanta MPO'.")
+        return None
 
     # Clean and filter data for Atlanta MSA cities
-    atlanta_msa_cities_lower = {city.lower() for city in atlanta_msa_cities}
-    ev_chargers_df = ev_chargers_df[ev_chargers_df['City'].fillna('').str.strip().str.lower().isin(atlanta_msa_cities_lower)]
+    cities_lower = {city.lower() for city in cities}
+    ev_chargers_df = ev_chargers_df[ev_chargers_df['City'].fillna('').str.strip().str.lower().isin(cities_lower)]
     
     # Clean 'Access Code' column and fill missing values with 'Unknown'
     ev_chargers_df['Access Code'] = ev_chargers_df['Access Code'].fillna('Unknown').str.strip().str.title().astype(str)
@@ -75,7 +81,8 @@ def ev_chargers_data(file_path):
     print("\nTotal Number of Connectors by Type:")
     for _, row in ev_chargers_connectors_df.iterrows():
         print(f"{row['index']}: {row[0]}")
-    print(f"Total Connectors Installed: {ev_chargers_connectors_df[0].sum()}")
+    total_connectors = ev_chargers_df[connector_columns].sum().sum()
+    print(f"Total Connectors Installed: {total_connectors}")
 
     station_df = (ev_chargers_df.groupby('ID', as_index=False).agg({
         # Metadata
@@ -103,11 +110,11 @@ def ev_chargers_data(file_path):
     dc_fast_count = int(station_df['EV DC Fast Count'].sum())
     total_chargers = level_1_count + level_2_count + dc_fast_count
 
-    print("\nTotal Number and Type of EV Chargers Installed in Atlanta MSA")
-    print("Level 1 EV Chargers:", level_1_count)
-    print("Level 2 EV Chargers:", level_2_count)
-    print("DC Fast Charging EV Chargers:", dc_fast_count)
-    print ("Total EV Chargers Installed: ", total_chargers)
+    print(f"\nTotal Number and Type of EV Chargers Installed in {region}")
+    print(f"Level 1 EV Chargers: {level_1_count}")
+    print(f"Level 2 EV Chargers: {level_2_count}")
+    print(f"DC Fast Charging EV Chargers: {dc_fast_count}")
+    print(f"Total EV Chargers Installed: {total_chargers}")
 
     # Calculate and print the number of EV chargers by access code
     ev_chargers_access_df = station_df.groupby('Access Code')[charger_columns].sum().reset_index()
@@ -167,4 +174,4 @@ def ev_chargers_data(file_path):
     return station_df
     # .to_csv("atlanta_msa_ev_chargers.csv", index=False)
 
-print(ev_chargers_data("alt_fuel_stations_ev_charging_units (Jul 7 2026).csv"))
+print(ev_chargers_data("alt_fuel_stations_ev_charging_units (Jul 7 2026).csv", "Atlanta MSA"))
