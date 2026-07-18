@@ -141,7 +141,7 @@ def ev_chargers_data(file_path):
     station_df['Year'] = station_df['Open Date'].dt.year   
 
     # Years to evaluate
-    target_years = [2005, 2015, 2025, 2026]
+    target_years = [2005, 2010, 2015, 2020, 2025, 2026]
 
     # Build cumulative counts for each type of charger and overall total
     cumulative_counts = []
