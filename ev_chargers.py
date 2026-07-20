@@ -43,10 +43,9 @@ def ev_chargers_data(file_path, region):
         print(f"Missing columns: {missing_cols}")
         return None
     
-    region = region.strip().lower()
-    if region == "atlanta msa":
+    if region == "Atlanta MSA":
         cities = atlanta_msa_cities
-    elif region == "atlanta mpo":
+    elif region == "Atlanta MPO":
         cities = [city for city in atlanta_msa_cities if city not in ["Bremen", "Tallapoosa", "Buchanan", "Temple", 
                                                             "Waco", "Lone Oak", "Luthersville", "Manchester", 
                                                             "Gay", "Grantville", "Greenville", "Haralson", 
@@ -87,7 +86,14 @@ def ev_chargers_data(file_path, region):
     station_df = (ev_chargers_df.groupby('ID', as_index=False).agg({
         # Metadata
         'City': 'first',
+        'Station Name': 'first',
+        'Street Address': 'first',
+        'Longitude': 'first',
+        'Latitude': 'first',
+        'Status Code': 'first',
         'Access Code': 'first',
+        'Groups With Access Code': 'first',
+        'Access Days Time': 'first',
         'EV Network': 'first',
         'Open Date': 'first',
         'Date Last Confirmed': 'first',
@@ -103,6 +109,15 @@ def ev_chargers_data(file_path, region):
         'EV CHAdeMO Connector Count': 'sum',
         'EV J3400 Connector Count': 'sum',
         'EV J3271 Connector Count': 'sum',}))
+
+    # Count number of chargers that are currently temporarily unavailable
+    unavailable_chargers_df = station_df[station_df['Status Code'] == 'T'][charger_columns].sum()
+    print("\nTemporarily Unavailable EV Chargers:")
+    for charger_type, count in unavailable_chargers_df.items():
+        print(f"{charger_type}: {count}")
+
+    # Edit station_df to include only stations that are not temporarily unavailable
+    station_df = station_df[station_df['Status Code'] != 'T']
     
     # Calculate total chargers by type and overall total
     level_1_count = int(station_df['EV Level1 EVSE Num'].sum())
@@ -125,15 +140,15 @@ def ev_chargers_data(file_path, region):
         print(f"  Level 2 EV Chargers: {row['EV Level2 EVSE Num']}")
         print(f"  DC Fast Charging EV Chargers: {row['EV DC Fast Count']}")
 
-    # Calculate and print the charging ports by charging network for each type of charger
-    station_df['EV Network'] = (station_df['EV Network'].fillna('Unknown'))
-    ev_chargers_network_df = station_df.groupby('EV Network')[charger_columns].sum().reset_index()
-    print("\nEV Chargers by Charging Network:")
-    for _, row in ev_chargers_network_df.iterrows():
-        print(f"Charging Network: {row['EV Network']}")
-        print(f"  Level 1 EV Chargers: {row['EV Level1 EVSE Num']}")
-        print(f"  Level 2 EV Chargers: {row['EV Level2 EVSE Num']}")
-        print(f"  DC Fast Charging EV Chargers: {row['EV DC Fast Count']}")
+    # # Calculate and print the charging ports by charging network for each type of charger
+    # station_df['EV Network'] = (station_df['EV Network'].fillna('Unknown'))
+    # ev_chargers_network_df = station_df.groupby('EV Network')[charger_columns].sum().reset_index()
+    # print("\nEV Chargers by Charging Network:")
+    # for _, row in ev_chargers_network_df.iterrows():
+    #     print(f"Charging Network: {row['EV Network']}")
+    #     print(f"  Level 1 EV Chargers: {row['EV Level1 EVSE Num']}")
+    #     print(f"  Level 2 EV Chargers: {row['EV Level2 EVSE Num']}")
+    #     print(f"  DC Fast Charging EV Chargers: {row['EV DC Fast Count']}")
 
     print("\nCumulative EV Chargers Installed Over Time")
     # Ensure 'Open Date' is in datetime format and handle errors
@@ -174,4 +189,4 @@ def ev_chargers_data(file_path, region):
     return station_df
     # .to_csv("atlanta_msa_ev_chargers.csv", index=False)
 
-print(ev_chargers_data("alt_fuel_stations_ev_charging_units (Jul 7 2026).csv", "Atlanta MSA"))
+print(ev_chargers_data("alt_fuel_stations_ev_charging_units (Jul 18 2026).csv", "Atlanta MSA"))
