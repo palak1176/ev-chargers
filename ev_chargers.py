@@ -97,6 +97,7 @@ def ev_chargers_data(file_path, region):
         'EV Network': 'first',
         'Open Date': 'first',
         'Date Last Confirmed': 'first',
+        'EV Connector Types': 'first',
 
         # EVSE counts (identical for every row of a station)
         'EV Level1 EVSE Num': 'max',
@@ -185,6 +186,13 @@ def ev_chargers_data(file_path, region):
     # Print cumulative counts
     print(ev_chargers_cumulative_df.to_string(index=False))
     print("\n")
+
+    station_df['EVSE Total'] = station_df[charger_columns].sum(axis=1)
+    station_df['Connector Total'] = station_df[connector_columns].sum(axis=1)
+
+    missing = station_df[(station_df['Connector Total'] == 0)]
+
+    print("Missing Connectors (Minimum):", missing['EVSE Total'].sum())
 
     return station_df
     # .to_csv("atlanta_msa_ev_chargers.csv", index=False)
