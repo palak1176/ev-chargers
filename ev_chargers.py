@@ -119,7 +119,7 @@ def ev_chargers_data(file_path, region):
 
     # Edit station_df to include only stations that are not temporarily unavailable
     station_df = station_df[station_df['Status Code'] != 'T']
-    
+
     # Calculate total chargers by type and overall total
     level_1_count = int(station_df['EV Level1 EVSE Num'].sum())
     level_2_count = int(station_df['EV Level2 EVSE Num'].sum())
@@ -185,14 +185,14 @@ def ev_chargers_data(file_path, region):
     ev_chargers_cumulative_df = pd.DataFrame(cumulative_counts)
     # Print cumulative counts
     print(ev_chargers_cumulative_df.to_string(index=False))
-    print("\n")
 
     station_df['EVSE Total'] = station_df[charger_columns].sum(axis=1)
     station_df['Connector Total'] = station_df[connector_columns].sum(axis=1)
+    print("\n")
 
     missing = station_df[(station_df['Connector Total'] == 0)]
-
     print("Missing Connectors (Minimum):", missing['EVSE Total'].sum())
+    print("\n")
 
     return station_df
     # .to_csv("atlanta_msa_ev_chargers.csv", index=False)
