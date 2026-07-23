@@ -1,24 +1,43 @@
 import pandas as pd
+import geopandas as gpd
+from shapely.geometry import Point
+import matplotlib.pyplot as plt
 
-atlanta_msa_cities = ["Acworth", "Adairsville", "Aldora", "Alpharetta", "Atlanta", "Auburn", "Austell", "Avondale Estates", 
-"Ball Ground", "Barnesville", "Berkeley Lake", "Bethlehem", "Between", "Bostwick", "Bowdon", "Braselton", 
-"Braswell", "Bremen", "Brookhaven", "Brooks", "Buchanan", "Buckhead", "Buford", "Canton", "Carl", "Carrollton", 
-"Cartersville", "Centralhatchee", "Chamblee", "Chattahoochee Hills", "Clarkston", "College Park", "Concord", 
-"Conyers", "Covington", "Cumming", "Dacula", "Dallas", "Dawsonville", "Decatur", "Doraville", "Douglasville",         
-"Duluth", "Dunwoody", "East Point", "Emerson", "Ephesus", "Euharlee", "Fairburn", "Fayetteville", "Flovilla", 
-"Forest Park", "Franklin", "Gay", "Good Hope", "Grantville", "Grayson", "Greenville", "Griffin", "Hampton", 
-"Hapeville", "Harrison", "Hiram", "Holly Springs", "Jackson", "Jasper", "Jenkinsburg", "Jersey", "Johns Creek", 
-"Jonesboro", "Kennesaw", "Kingston", "Lake City", "Lawrenceville", "Mableton", "Lilburn", "Lithonia", "Locust Grove", 
-"Loganville", "Lone Oak", "Lovejoy", "Luthersville", "Madison", "Manchester", "Mansfield", "Marietta", "McDonough", 
-"Meansville", "Milner", "Milton", "Molena", "Monroe", "Monticello", "Moreland", "Morrow", "Mount Zion", "Mountain Park", 
-"Mulberry", "Nelson", "Newborn", "Newnan", "Norcross", "Orchard Hill", "Oxford", "Peachtree City", "Peachtree Corners", 
-"Pine Lake", "Porterdale", "Powder Springs", "Rest Haven", "Riverdale", "Roberta", "Rockmart", "Roswell", "Rutledge", 
-"Sandy Springs", "Senoia", "Shady Dale", "Sharpsburg", "Smyrna", "Snellville", "Social Circle", "South Fulton", "Statham", 
-"Stockbridge", "Stone Mountain", "Stonecrest", "Sugar Hill", "Sunny Side", "Suwanee", "Talking Rock", "Tallapoosa", 
-"Taylorsville", "Temple", "Tucker", "Turin", "Tyrone", "Union City", "Villa Rica", "Waco", "Waleska", "Walnut Grove", 
-"Warm Springs", "White", "Whitesburg", "Williamson", "Winder", "Woodbury", "Woodstock", "Woolsey", "Zebulon"]
+def filter_by_boundary(ev_chargers_df, boundary_path, predicate="within"):
+    """
+    Spatial-join approach: keep only stations whose Longitude/Latitude
+    point falls inside the given ArcGIS boundary layer.
 
-def ev_chargers_data(file_path, region):
+    boundary_path can be:
+      - a local shapefile/geojson path, or
+      - an ArcGIS Feature Service query URL
+    """
+    # Drop rows without coordinates before building geometries
+    coordinates_present = ev_chargers_df['Longitude'].notna() & ev_chargers_df['Latitude'].notna()
+    missing_coordinatess = (~coordinates_present).sum()
+    if missing_coordinatess:
+        print(f"Warning: {missing_coordinatess} rows are missing Longitude/Latitude and will be dropped from the boundary join.")
+    ev_chargers_df = ev_chargers_df[coordinates_present].copy()
+
+    geometry = [Point(xy) for xy in zip(ev_chargers_df['Longitude'], ev_chargers_df['Latitude'])]
+    stations_gdf = gpd.GeoDataFrame(ev_chargers_df, geometry=geometry, crs="EPSG:4326")
+
+    boundary_gdf = gpd.read_file(boundary_path)
+    if boundary_gdf.crs is None:
+        raise ValueError("Boundary layer has no CRS defined — check the source file.")
+    boundary_gdf = boundary_gdf.to_crs("EPSG:4326")
+
+    # Dissolve in case the boundary layer has multiple polygon features (e.g. one per county)
+    boundary_union = boundary_gdf.dissolve().reset_index(drop=True)
+
+    joined = gpd.sjoin(stations_gdf, boundary_union, how="inner", predicate=predicate)
+
+    # Drop the join's extra index/attribute columns from the boundary layer, keep original columns + geometry
+    keep_cols = [c for c in ev_chargers_df.columns] + ['geometry']
+    return pd.DataFrame(joined[keep_cols])
+
+
+def ev_chargers_data(file_path, boundary_path, predicate="within"):
     # Reads CSV file
     try:
         ev_chargers_df = pd.read_csv(file_path)
@@ -42,29 +61,9 @@ def ev_chargers_data(file_path, region):
     if missing_cols:
         print(f"Missing columns: {missing_cols}")
         return None
-    
-    if region == "Atlanta MSA":
-        cities = atlanta_msa_cities
-    elif region == "Atlanta MPO":
-        cities = [city for city in atlanta_msa_cities if city not in 
-        ["Bremen", "Tallapoosa", "Buchanan", "Temple", 
-        "Waco", "Lone Oak", "Luthersville", "Manchester", 
-        "Gay", "Grantville", "Greenville", "Haralson", 
-        "Warm Springs", "Woodbury", "Adairsville", 
-        "Emerson", "Euharlee", "Taylorsville", "White",
-        "Kingston", "Ephesus", "Franklin", "Centralhatchee",
-        "Rutledge", "Madison", "Social Circle", "Bostwick",
-        "Buckhead", "Flovilla", "Jackson", "Shady Dale", 
-        "Monticello", "Jasper", "Aldora", "Barnesville",
-        "Milner", "Orchard Hill", "Talking Rock", "Nelson",
-        "Meansville", "Molena", "Concord", "Williamson", "Zebulon"]]
-    else:
-        print(f"Error: Region '{region}' is not recognized. Please use 'Atlanta MSA' or 'Atlanta MPO'.")
-        return None
 
-    # Clean and filter data for Atlanta MSA cities
-    cities_lower = {city.lower() for city in cities}
-    ev_chargers_df = ev_chargers_df[ev_chargers_df['City'].fillna('').str.strip().str.lower().isin(cities_lower)]
+    # Filter to stations within the boundary
+    ev_chargers_df = filter_by_boundary(ev_chargers_df, boundary_path, predicate=predicate)
     
     # Clean 'Access Code' column and fill missing values with 'Unknown'
     ev_chargers_df['Access Code'] = ev_chargers_df['Access Code'].fillna('Unknown').str.strip().str.title().astype(str)
@@ -127,7 +126,7 @@ def ev_chargers_data(file_path, region):
     dc_fast_count = int(station_df['EV DC Fast Count'].sum())
     total_chargers = level_1_count + level_2_count + dc_fast_count
 
-    print(f"\nTotal Number and Type of EV Chargers Installed in {region}")
+    print(f"\nTotal Number and Type of EV Chargers Installed")
     print(f"Level 1 EV Chargers: {level_1_count}")
     print(f"Level 2 EV Chargers: {level_2_count}")
     print(f"DC Fast Charging EV Chargers: {dc_fast_count}")
@@ -198,4 +197,25 @@ def ev_chargers_data(file_path, region):
     return station_df
     # .to_csv("atlanta_msa_ev_chargers.csv", index=False)
 
-print(ev_chargers_data("alt_fuel_stations_ev_charging_units (Jul 18 2026).csv", "Atlanta MSA"))
+
+if __name__ == "__main__":
+    # Point this at ARC's MPO boundary FeatureServer query URL, or a local shapefile/geojson
+    mpo_boundary_url = (
+        "https://services1.arcgis.com/Ug5xGQbHsD8zuZzM/arcgis/rest/services/"
+        "Atlanta_Region_Planning_Areas/FeatureServer/0/query"
+        "?where=REGION%20IN%20('MPA%202024')"
+        "&outFields=*"
+        "&f=geojson")
+    msa_boundary_url = (
+        "https://services1.arcgis.com/Ug5xGQbHsD8zuZzM/arcgis/rest/services/"
+        "Atlanta_Region_Planning_Areas/FeatureServer/0/query"
+        "?where=REGION%20IN%20('MSA_CBSA%202010')"
+        "&outFields=*"
+        "&f=geojson"
+    )
+
+    result = ev_chargers_data(
+        "alt_fuel_stations_ev_charging_units (Jul 18 2026).csv",
+        boundary_path=mpo_boundary_url,)
+    print(result)
+    
