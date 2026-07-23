@@ -46,17 +46,18 @@ def ev_chargers_data(file_path, region):
     if region == "Atlanta MSA":
         cities = atlanta_msa_cities
     elif region == "Atlanta MPO":
-        cities = [city for city in atlanta_msa_cities if city not in ["Bremen", "Tallapoosa", "Buchanan", "Temple", 
-                                                            "Waco", "Lone Oak", "Luthersville", "Manchester", 
-                                                            "Gay", "Grantville", "Greenville", "Haralson", 
-                                                            "Warm Springs", "Woodbury", "Adairsville", 
-                                                            "Emerson", "Euharlee", "Taylorsville", "White",
-                                                            "Kingston", "Ephesus", "Franklin", "Centralhatchee",
-                                                            "Rutledge", "Madison", "Social Circle", "Bostwick",
-                                                            "Buckhead", "Flovilla", "Jackson", "Shady Dale", 
-                                                            "Monticello", "Jasper", "Aldora", "Barnesville",
-                                                            "Milner", "Orchard Hill", "Talking Rock", "Nelson",
-                                                            "Meansville", "Molena", "Concord", "Williamson", "Zebulon"]]
+        cities = [city for city in atlanta_msa_cities if city not in 
+        ["Bremen", "Tallapoosa", "Buchanan", "Temple", 
+        "Waco", "Lone Oak", "Luthersville", "Manchester", 
+        "Gay", "Grantville", "Greenville", "Haralson", 
+        "Warm Springs", "Woodbury", "Adairsville", 
+        "Emerson", "Euharlee", "Taylorsville", "White",
+        "Kingston", "Ephesus", "Franklin", "Centralhatchee",
+        "Rutledge", "Madison", "Social Circle", "Bostwick",
+        "Buckhead", "Flovilla", "Jackson", "Shady Dale", 
+        "Monticello", "Jasper", "Aldora", "Barnesville",
+        "Milner", "Orchard Hill", "Talking Rock", "Nelson",
+        "Meansville", "Molena", "Concord", "Williamson", "Zebulon"]]
     else:
         print(f"Error: Region '{region}' is not recognized. Please use 'Atlanta MSA' or 'Atlanta MPO'.")
         return None
