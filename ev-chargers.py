@@ -51,12 +51,10 @@ def ev_chargers_data(file_path, boundary_path, predicate="within"):
         print("Error: There was a parsing error while reading the file.")
         return None
     
-    # Check for required columns and keep only those needed for analysis
+    # Check for required columns
     must_have_columns = ['ID', 'City', 'EV Level1 EVSE Num', 'EV Level2 EVSE Num', 'EV DC Fast Count', 'Access Code', 'EV Network', 
-                       'EV J1772 Connector Count', 'EV CCS Connector Count', 'EV CHAdeMO Connector Count', 'EV J3400 Connector Count', 'EV J3271 Connector Count',
-                       'Open Date', 'Date Last Confirmed'] 
-    # could be nice to have these columns if needed: 'Updated At', 'Access Detail Code'
-    
+                       'EV J1772 Connector Count', 'EV CCS Connector Count', 'EV CHAdeMO Connector Count', 'EV J3400 Connector Count', 
+                       'EV J3271 Connector Count', 'Open Date', 'Date Last Confirmed'] 
     missing_cols = [col for col in must_have_columns if col not in ev_chargers_df.columns] 
     if missing_cols:
         print(f"Missing columns: {missing_cols}")
@@ -68,21 +66,14 @@ def ev_chargers_data(file_path, boundary_path, predicate="within"):
     # Clean 'Access Code' column and fill missing values with 'Unknown'
     ev_chargers_df['Access Code'] = ev_chargers_df['Access Code'].fillna('Unknown').str.strip().str.title().astype(str)
     
-    # Fill missing values in charger count columns with 0 and convert to integers
+    # Fill missing values in charger/connector count columns with 0 and convert to integers
     charger_columns = ['EV Level1 EVSE Num', 'EV Level2 EVSE Num', 'EV DC Fast Count']
+    connector_columns = ['EV J1772 Connector Count', 'EV CCS Connector Count', 'EV CHAdeMO Connector Count',
+                        'EV J3400 Connector Count', 'EV J3271 Connector Count']
     ev_chargers_df[charger_columns] = ev_chargers_df[charger_columns].fillna(0).astype(int)
-
-    # Calculate and print the number of connectors by type 
-    connector_columns = ['EV J1772 Connector Count', 'EV CCS Connector Count', 'EV CHAdeMO Connector Count', 
-                         'EV J3400 Connector Count', 'EV J3271 Connector Count']
-    ev_chargers_df[connector_columns] = (ev_chargers_df[connector_columns].fillna(0).astype(int))
-    ev_chargers_connectors_df = ev_chargers_df[connector_columns].sum().reset_index()
-    print("\nTotal Number of Connectors by Type:")
-    for _, row in ev_chargers_connectors_df.iterrows():
-        print(f"{row['index']}: {row[0]}")
-    total_connectors = ev_chargers_df[connector_columns].sum().sum()
-    print(f"Total Connectors Installed: {total_connectors}")
-
+    ev_chargers_df[connector_columns] = ev_chargers_df[connector_columns].fillna(0).astype(int)
+    
+    # Aggregate data by station ID to get unique stations and their total chargers/connectors
     station_df = (ev_chargers_df.groupby('ID', as_index=False).agg({
         # Metadata
         'City': 'first',
@@ -111,15 +102,12 @@ def ev_chargers_data(file_path, boundary_path, predicate="within"):
         'EV J3400 Connector Count': 'sum',
         'EV J3271 Connector Count': 'sum',}))
 
-    # Count number of chargers that are currently temporarily unavailable
-    unavailable_chargers_df = station_df[station_df['Status Code'] == 'T'][charger_columns].sum()
-    print("\nTemporarily Unavailable EV Chargers:")
-    for charger_type, count in unavailable_chargers_df.items():
-        print(f"{charger_type}: {count}")
-
-    # Edit station_df to include only stations that are not temporarily unavailable
+    # Count temporarily unavailable stations (Status Code 'T') and exclude them from the main station_df
+    unavailable_df = station_df[station_df['Status Code'] == 'T']
+    print("\nTemporarily Unavailable EV Chargers (excluded from all totals below):")
+    print(unavailable_df[charger_columns].sum())
     station_df = station_df[station_df['Status Code'] != 'T']
-
+    
     # Calculate total chargers by type and overall total
     level_1_count = int(station_df['EV Level1 EVSE Num'].sum())
     level_2_count = int(station_df['EV Level2 EVSE Num'].sum())
@@ -141,15 +129,19 @@ def ev_chargers_data(file_path, boundary_path, predicate="within"):
         print(f"  Level 2 EV Chargers: {row['EV Level2 EVSE Num']}")
         print(f"  DC Fast Charging EV Chargers: {row['EV DC Fast Count']}")
 
-    # # Calculate and print the charging ports by charging network for each type of charger
-    # station_df['EV Network'] = (station_df['EV Network'].fillna('Unknown'))
-    # ev_chargers_network_df = station_df.groupby('EV Network')[charger_columns].sum().reset_index()
-    # print("\nEV Chargers by Charging Network:")
-    # for _, row in ev_chargers_network_df.iterrows():
-    #     print(f"Charging Network: {row['EV Network']}")
-    #     print(f"  Level 1 EV Chargers: {row['EV Level1 EVSE Num']}")
-    #     print(f"  Level 2 EV Chargers: {row['EV Level2 EVSE Num']}")
-    #     print(f"  DC Fast Charging EV Chargers: {row['EV DC Fast Count']}")
+    # Calculate and print the number of connectors by type
+    ev_chargers_connectors_df = station_df[connector_columns].sum().reset_index()
+    print("\nTotal Number of Connectors by Type:")
+    for _, row in ev_chargers_connectors_df.iterrows():
+        print(f"{row['index']}: {row[0]}")
+    total_connectors = station_df[connector_columns].sum().sum()
+    print(f"Total Connectors Installed: {total_connectors}")
+
+    # Count stations with missing connector counts (where EVSE count > 0 but connector count = 0)
+    station_df['EVSE Total'] = station_df[charger_columns].sum(axis=1)
+    station_df['Connector Total'] = station_df[connector_columns].sum(axis=1)
+    missing = station_df[(station_df['Connector Total'] == 0) & (station_df['EVSE Total'] > 0)]
+    print("\nEach station should have at least one connector for each EVSE, so the minimum number of connectors not captured is:", missing['EVSE Total'].sum())
 
     print("\nCumulative EV Chargers Installed Over Time")
     # Ensure 'Open Date' is in datetime format and handle errors
@@ -185,21 +177,13 @@ def ev_chargers_data(file_path, boundary_path, predicate="within"):
     ev_chargers_cumulative_df = pd.DataFrame(cumulative_counts)
     # Print cumulative counts
     print(ev_chargers_cumulative_df.to_string(index=False))
-
-    station_df['EVSE Total'] = station_df[charger_columns].sum(axis=1)
-    station_df['Connector Total'] = station_df[connector_columns].sum(axis=1)
-    print("\n")
-
-    missing = station_df[(station_df['Connector Total'] == 0)]
-    print("Missing Connectors (Minimum):", missing['EVSE Total'].sum())
-    print("\n")
+    print("Note: Cumulative counts are based on the 'Open Date' of each station. If 'Open Date' is missing, 'Date Last Confirmed' is used as a fallback.\n")
 
     return station_df
     # .to_csv("atlanta_msa_ev_chargers.csv", index=False)
 
 
 if __name__ == "__main__":
-    # Point this at ARC's MPO boundary FeatureServer query URL, or a local shapefile/geojson
     mpo_boundary_url = (
         "https://services1.arcgis.com/Ug5xGQbHsD8zuZzM/arcgis/rest/services/"
         "Atlanta_Region_Planning_Areas/FeatureServer/0/query"
@@ -211,11 +195,9 @@ if __name__ == "__main__":
         "Atlanta_Region_Planning_Areas/FeatureServer/0/query"
         "?where=REGION%20IN%20('MSA_CBSA%202010')"
         "&outFields=*"
-        "&f=geojson"
-    )
+        "&f=geojson")
 
     result = ev_chargers_data(
         "alt_fuel_stations_ev_charging_units (Jul 18 2026).csv",
-        boundary_path=mpo_boundary_url,)
+        boundary_path=msa_boundary_url,)
     print(result)
-    
